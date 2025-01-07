@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AZ Motor Spare Sales Entry</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #e8e8ee;
+            text-align: center;
+    }
+    h1 {
+            color: #333;
+        }
+    .container {
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+    }
+    .form-group {
+      margin-bottom: 15px;
+     
+    }
+    input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    .form-group input,
+    .form-group select,
+    .form-group button {
+      padding: 10px;
+      width: 100%;
+      font-size: 14px;
+    }
+    .item-image {
+      display: block;
+      margin-top: 10px;
+      width: 150px;
+      height: auto;
+    }
+    img {
+            display: block;
+            margin: 10px auto;
+            max-width: 150px;
+        }
+    .sales-table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+    }
+    .sales-table th, .sales-table td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    .delete-button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .delete-button:hover {
+      background-color: darkred;
+    }
+    .totals-row td {
+      font-weight: bold;
+    }
+    button {
+            background-color:rgb(80, 8, 8);
+            color: rgb(255, 251, 251);
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #313233;
+        }
+        .nav-button {
+            margin-top: 20px;
+            background-color: #28a745;
+        }
+        .nav-button:hover {
+            background-color: #218838;
+        }
+    
+  </style>
+</head>
+<body>
+
+  <h1>AZ Motor Spare Sales </h1>
+  <div class="container">
+    <img src="555-removebg-preview.png" alt="AZ Motor Spare Logo">
+    <!-- Entry Form -->
+    <div class="form-group">
+      <label for="date">Select Date</label>
+      <input type="date" id="date" required>
+    </div>
+
+    <div class="form-group">
+      <label for="item">Select Item</label>
+      <select id="item" onchange="showItemImage()" required>
+        <option value="">Select Item</option>
+                <option value="SIDE MIRROR RECTANGLE -  BLACK">SIDE MIRROR RECTANGLE -  BLACK</option>
+                <option value="SIDE MIRROR RECTANGLE -  CARBON">SIDE MIRROR RECTANGLE -  CARBON</option>
+                <option value="SIDE MIRROR UNIVERSAL -  BLACK">SIDE MIRROR UNIVERSAL -  BLACK</option>
+                <option value="SIDE MIRROR UNIVERSAL -  RED">SIDE MIRROR UNIVERSAL -  RED</option>
+                <option value="GN125 DIGITAL METER">GN125 DIGITAL METER</option>
+                <option value="GN125 SIGNAL LIGHT">GN125 SIGNAL LIGHT</option>
+                <option value="GN125 TWIN TAIL LIGHT BLACK">GN125 TWIN TAIL LIGHT BLACK</option>
+                <option value="UNIVERSAL HANDLE BALANCER ALLOY BAR END - RED">UNIVERSAL HANDLE BALANCER ALLOY BAR END - RED</option>
+                <option value="UNIVERSAL HANDLE BALANCER ALLOY BAR END - BLACK">UNIVERSAL HANDLE BALANCER ALLOY BAR END - BLACK</option>
+                <option value="UNIVERSAL GRIP COVER">UNIVERSAL GRIP COVER</option>
+                <option value="HONDA AIRBLADE SIDE MIRROR CARBON">HONDA AIRBLADE SIDE MIRROR CARBON</option>
+                <option value="HONDA AIRBLADE SIDE MIRROR BLACK">HONDA AIRBLADE SIDE MIRROR BLACK</option>
+      </select>
+    </div>
+
+    <div id="itemImageContainer"></div>
+
+    <div class="form-group">
+      <label for="qty">Quantity</label>
+      <input type="number" id="qty" oninput="calculateTotal()" min="1" required>
+    </div>
+
+    <div class="form-group">
+      <label for="price">Price</label>
+      <input type="number" id="price" oninput="calculateTotal()" min="0" required>
+    </div>
+
+    <div class="form-group">
+      <label for="totalValue">Total Value</label>
+      <span id="totalValue">0.00</span>
+    </div>
+
+    <div class="form-group">
+      <label for="customerName">Customer Name</label>
+      <input type="text" id="customerName" required>
+    </div>
+
+    <div class="form-group">
+      <label for="contact">Contact</label>
+      <input type="text" id="contact" required>
+    </div>
+
+    <div class="form-group">
+      <button onclick="saveSale()">Save Sale</button>
+    </div>
+
+   
+
+    
+
+  <!-- Firebase Script -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- jsPDF and jsPDF AutoTable Plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.js"></script>
+
+  <script>
+    
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-51lpbUdQGsWR1fMTPy9qAs-67X_UR60",
+      authDomain: "sales-b3b4f.firebaseapp.com",
+      databaseURL: "https://sales-b3b4f-default-rtdb.firebaseio.com",
+      projectId: "sales-b3b4f",
+      storageBucket: "sales-b3b4f.firebasestorage.app",
+      messagingSenderId: "983695219492",
+      appId: "1:983695219492:web:4d44d39b2fbc915abdf1b1"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function calculateTotal() {
+      const qty = parseFloat(document.getElementById("qty").value) || 0;
+      const price = parseFloat(document.getElementById("price").value) || 0;
+      const total = qty * price;
+      document.getElementById("totalValue").textContent = total.toFixed(2);
+    }
+
+    
+
+    function showItemImage() {
+      const item = document.getElementById("item").value;
+      const itemImageContainer = document.getElementById("itemImageContainer");
+      let imageUrl = "";
+
+      if (item === "SIDE MIRROR RECTANGLE -  BLACK") {
+        imageUrl = "https://m.media-amazon.com/images/I/511L62-yx7L._AC_UF350,350_QL80_.jpg";
+      } else if (item === "SIDE MIRROR RECTANGLE -  CARBON") {
+        imageUrl = "RECTANGLE MIRROR 2.png";
+      } else if (item === "SIDE MIRROR UNIVERSAL -  BLACK") {
+        imageUrl = "Untitled-2.png";
+      } else if (item === "SIDE MIRROR UNIVERSAL -  RED") {
+        imageUrl = "UniversalMirror.png";
+      }else if (item === "GN125 DIGITAL METER") {
+        imageUrl = "GN125 Digital Meter 3.png";
+      }else if (item === "GN125 SIGNAL LIGHT") {
+        imageUrl = "Signal Light GN125.jpg";
+      }else if (item === "GN125 TWIN TAIL LIGHT BLACK") {
+        imageUrl = "Twin Tail Light.png";
+      }else if (item === "UNIVERSAL HANDLE BALANCER ALLOY BAR END - RED") {
+        imageUrl = "8.jpg";
+      }else if (item === "UNIVERSAL HANDLE BALANCER ALLOY BAR END - BLACK") {
+        imageUrl = "END BAR.png";
+      }else if (item === "UNIVERSAL GRIP COVER") {
+        imageUrl = "Untitled-1.png";
+      }else if (item === "HONDA AIRBLADE SIDE MIRROR CARBON") {
+        imageUrl = "AIR B MIRROR carbon.png";
+      }else if (item === "HONDA AIRBLADE SIDE MIRROR BLACK") {
+        imageUrl = "AIR B MIRROR.png";
+      }
+      
+
+      itemImageContainer.innerHTML = imageUrl ? `<img src="${imageUrl}" alt="${item}" class="item-image">` : "";
+    }
+
+    function saveSale() {
+      const date = document.getElementById("date").value;
+      const item = document.getElementById("item").value;
+      const qty = document.getElementById("qty").value;
+      const price = document.getElementById("price").value;
+      const totalValue = document.getElementById("totalValue").textContent;
+      const customerName = document.getElementById("customerName").value;
+      const contact = document.getElementById("contact").value;
+
+      if (date && item && qty && price && totalValue && customerName && contact) {
+        const newSale = {
+          date,
+          item,
+          qty,
+          price,
+          totalValue,
+          customerName,
+          contact
+        };
+
+        // Save sale to Firebase
+        const salesRef = db.ref('sales');
+        salesRef.push(newSale, (error) => {
+          if (error) {
+            alert("Error saving data: " + error.message);
+          } else {
+            alert("Sale saved successfully!");
+            displaySalesList();
+          }
+        });
+      } else {
+        alert("Please fill in all fields!");
+      }
+    }
+
+    function displaySalesList() {
+      const salesListBody = document.getElementById("salesListBody");
+      const salesTable = document.getElementById("salesTable");
+      let grandTotal = 0;
+      let totalQty = 0;
+
+      db.ref('sales').once('value', (snapshot) => {
+        const sales = snapshot.val();
+        salesListBody.innerHTML = "";
+        if (!sales) {
+          salesListBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No entries saved yet.</td></tr>";
+        } else {
+          Object.keys(sales).forEach(key => {
+            const entry = sales[key];
+            grandTotal += parseFloat(entry.totalValue);
+            totalQty += parseInt(entry.qty);
+
+            salesListBody.innerHTML += `
+              <tr>
+                <td>${entry.date}</td>
+                <td>${entry.item}</td>
+                <td>${entry.qty}</td>
+                <td>${entry.price}</td>
+                <td>${entry.totalValue}</td>
+                <td>${entry.customerName}</td>
+                <td>${entry.contact}</td>
+                <td><button class="delete-button" onclick="deleteSale('${key}')">Delete</button></td>
+              </tr>
+            `;
+          });
+        }
+
+        document.getElementById("grandTotal").textContent = grandTotal.toFixed(2);
+        document.getElementById("totalQty").textContent = totalQty;
+        salesTable.style.display = "table";
+      });
+    }
+
+    
+  </script>
+</body>
+</html>
