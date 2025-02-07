@@ -153,42 +153,59 @@
 
     // Display saved sales data
     function displaySalesList() {
-      const salesListBody = document.getElementById("salesListBody");
-      const totalQty = document.getElementById("totalQty");
-      const grandTotal = document.getElementById("grandTotal");
+  const salesListBody = document.getElementById("salesListBody");
+  const totalQty = document.getElementById("totalQty");
+  const grandTotal = document.getElementById("grandTotal");
+  const filterItem = document.getElementById("filterItem");
 
-      salesListBody.innerHTML = "";
-      db.ref('sales').once('value', (snapshot) => {
-        const sales = snapshot.val();
-        if (!sales) {
-          salesListBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No sales found.</td></tr>";
-        } else {
-          let totalQtyValue = 0;
-          let grandTotalValue = 0;
-          Object.keys(sales).forEach(key => {
-            const entry = sales[key];
-            const row = `
-              <tr data-id="${key}" data-date="${entry.date}" data-item="${entry.item}" data-qty="${entry.qty}" data-total="${entry.totalValue}">
-                <td>${entry.date}</td>
-                <td>${entry.item}</td>
-                <td>${entry.qty}</td>
-                <td>${entry.price}</td>
-                <td>${entry.totalValue}</td>
-                <td>${entry.customerName}</td>
-                <td>${entry.contact}</td>
-                <td><button onclick="deleteEntry('${key}')">Delete</button></td>
-              </tr>
-            `;
-            salesListBody.innerHTML += row;
-            totalQtyValue += parseInt(entry.qty);
-            grandTotalValue += parseFloat(entry.totalValue);
-          });
+  salesListBody.innerHTML = "";
+  filterItem.innerHTML = "<option value=''>All Items</option>"; // Reset filter dropdown
 
-          totalQty.textContent = totalQtyValue;
-          grandTotal.textContent = grandTotalValue.toFixed(2);
-        }
+  let uniqueItems = new Set(); // Store unique item names
+  let totalQtyValue = 0;
+  let grandTotalValue = 0;
+
+  db.ref('sales').once('value', (snapshot) => {
+    const sales = snapshot.val();
+    if (!sales) {
+      salesListBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No sales found.</td></tr>";
+    } else {
+      Object.keys(sales).forEach(key => {
+        const entry = sales[key];
+        uniqueItems.add(entry.item); // Add item name to the set
+
+        const row = `
+          <tr data-id="${key}" data-date="${entry.date}" data-item="${entry.item}" data-qty="${entry.qty}" data-total="${entry.totalValue}">
+            <td>${entry.date}</td>
+            <td>${entry.item}</td>
+            <td>${entry.qty}</td>
+            <td>${entry.price}</td>
+            <td>${entry.totalValue}</td>
+            <td>${entry.customerName}</td>
+            <td>${entry.contact}</td>
+            <td><button onclick="deleteEntry('${key}')">Delete</button></td>
+          </tr>
+        `;
+
+        salesListBody.innerHTML += row;
+        totalQtyValue += parseInt(entry.qty);
+        grandTotalValue += parseFloat(entry.totalValue);
+      });
+
+      totalQty.textContent = totalQtyValue;
+      grandTotal.textContent = grandTotalValue.toFixed(2);
+
+      // Populate the filter dropdown with unique items
+      uniqueItems.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.toLowerCase();
+        option.textContent = item;
+        filterItem.appendChild(option);
       });
     }
+  });
+}
+
 
     // Filter sales by item and date
     function filterSales() {
