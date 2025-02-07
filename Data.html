@@ -35,24 +35,39 @@
     label {
       font-weight: bold;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    table th, table td {
-      border: 1px solid #ddd;
-      text-align: center;
-      padding: 8px;
-    }
-    table th {
-      background-color: #f4f4f4;
-      font-weight: bold;
-    }
-    table tfoot td {
-      font-weight: bold;
-      background-color: #f9f9f9;
-    }
+    .table-wrapper {
+  max-height: 400px; /* Adjust as needed */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  position: relative;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead, tfoot {
+  position: sticky;
+  background-color: #f4f4f4; /* Ensure visibility */
+  z-index: 1000;
+}
+
+thead {
+  top: 0;
+}
+
+tfoot {
+  bottom: 0;
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
+  
+table th, table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 8px;
+}
     button {
       padding: 10px 15px;
       background-color: #a84747;
@@ -106,31 +121,33 @@
     </div>
 
     <!-- Sales Table -->
-    <table id="salesTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Price</th>
-          <th>Total</th>
-          <th>Customer Name</th>
-          <th>Contact</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="salesListBody"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="2">Grand Total:</td>
-          <td id="totalQty">0</td>
-          <td></td>
-          <td id="grandTotal">0.00</td>
-          <td colspan="3"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
+    <div class="table-wrapper">
+      <table id="salesTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Customer Name</th>
+            <th>Contact</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="salesListBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Grand Total:</td>
+            <td id="totalQty">0</td>
+            <td></td>
+            <td id="grandTotal">0.00</td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
