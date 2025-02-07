@@ -220,47 +220,49 @@
     }
 
     // Save sale and update stock
-    function saveSale(event) {
-      event.preventDefault();
-      const selectedItem = document.getElementById('items').value;
-      const qty = parseInt(document.getElementById('qty').value);
-      const currentStock = parseInt(document.getElementById('currentStock').value);
+// Save sale and update stock
+function saveSale(event) {
+  event.preventDefault();
+  const selectedItem = document.getElementById('items').value;
+  const qty = parseInt(document.getElementById('qty').value);
+  const currentStock = parseInt(document.getElementById('currentStock').value);
 
-      if (!selectedItem) {
-        showError('Please select an item.');
-        return false;
-      }
+  if (!selectedItem) {
+    showError('Please select an item.');
+    return false;
+  }
 
-      if (qty > currentStock) {
-        showError('Insufficient stock for the selected item.');
-        return false;
-      }
+  if (qty > currentStock) {
+    showError('Insufficient stock for the selected item.');
+    return false;
+  }
 
-      const saleData = {
-        date: document.getElementById('date').value,
-        item: selectedItem,
-        qty: qty,
-        price: parseFloat(document.getElementById('price').value),
-        totalValue: parseFloat(document.getElementById('totalValue').textContent),
-        customerName: document.getElementById('customerName').value,
-        contact: document.getElementById('contact').value
-      };
+  const saleData = {
+    date: document.getElementById('date').value,
+    item: selectedItem,
+    qty: qty,
+    price: parseFloat(document.getElementById('price').value),
+    totalValue: parseFloat(document.getElementById('totalValue').textContent),
+    customerName: document.getElementById('customerName').value,
+    contact: document.getElementById('contact').value
+  };
 
-      // Save sale to database
-      db.ref('sales').push(saleData).then(() => {
-        // Update stock in database
-        db.ref(`stock/${selectedItem}/qty`).set(currentStock - qty).then(() => {
-          alert('Sale saved successfully.');
-          document.getElementById('salesForm').reset();
-          document.getElementById('totalValue').textContent = '0';
-          updatePriceAndStock();
-        });
-      }).catch(error => {
-        showError('Error saving sale: ' + error.message);
-      });
+  // Save sale to database
+  db.ref('sales').push(saleData).then(() => {
+    // Update stock in database (Fix: use 'quantity' instead of 'qty')
+    db.ref(`stock/${selectedItem}/quantity`).set(currentStock - qty).then(() => {
+      alert('Sale saved successfully.');
+      document.getElementById('salesForm').reset();
+      document.getElementById('totalValue').textContent = '0';
+      updatePriceAndStock(); // Refresh stock display
+    });
+  }).catch(error => {
+    showError('Error saving sale: ' + error.message);
+  });
 
-      return false;
-    }
+  return false;
+}
+
 
     // Show error message
     function showError(message) {
